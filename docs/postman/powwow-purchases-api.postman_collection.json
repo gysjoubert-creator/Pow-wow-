@@ -1,0 +1,290 @@
+{
+  "info": {
+    "_postman_id": "54260060-c37f-4683-9fcb-c21d94984906",
+    "name": "PowWow Purchases API",
+    "description": "Коллекция для тестирования валидации чеков Apple и Google Play.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "33811121"
+  },
+  "item": [
+    {
+      "name": "1. Validate iOS Sandbox",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{firebase_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"transaction_id\": \"<transaction_id из StoreKit 2>\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/purchases/validate/ios/sandbox",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "purchases",
+            "validate",
+            "ios",
+            "sandbox"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Validate iOS Production",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{firebase_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"transaction_id\": \"<transaction_id из StoreKit 2>\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/purchases/validate/ios/production",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "purchases",
+            "validate",
+            "ios",
+            "production"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Validate Android (Subscription)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{firebase_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"package_name\": \"com.gys.powwow\",\n    \"product_id\": \"com.gys.powwow.subscription\",\n    \"purchase_token\": \"<purchase_token из Google Play>\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/purchases/validate/android",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "purchases",
+            "validate",
+            "android"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Validate Android (Life-long)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{firebase_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"package_name\": \"com.gys.powwow\",\n    \"product_id\": \"com.gys.powwow.one.time\",\n    \"purchase_token\": \"<purchase_token из Google Play>\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/purchases/validate/android",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "purchases",
+            "validate",
+            "android"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Firebase Bearer Token",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"dev.testing.env25@gmail.com\",\r\n  \"password\": \"12345678\",\r\n  \"returnSecureToken\": true\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDuhYCrPB21nUbSRqK1BD3nBFFdz7vxL9g",
+          "protocol": "https",
+          "host": [
+            "identitytoolkit",
+            "googleapis",
+            "com"
+          ],
+          "path": [
+            "v1",
+            "accounts:signInWithPassword"
+          ],
+          "query": [
+            {
+              "key": "key",
+              "value": "AIzaSyDuhYCrPB21nUbSRqK1BD3nBFFdz7vxL9g"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "all subscriptions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{firebase_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/purchases/products",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "purchases",
+            "products"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{firebase_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/purchases/products",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "purchases",
+                "products"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"ios\": [\n      {\n        \"product_id\": \"com.gys.powwow.year\",\n        \"type\": \"subscription\",\n        \"duration\": \"1 year\"\n      },\n      {\n        \"product_id\": \"com.gys.powwow.month\",\n        \"type\": \"subscription\",\n        \"duration\": \"1 month\"\n      },\n      {\n        \"product_id\": \"com.gys.powwow.week\",\n        \"type\": \"subscription\",\n        \"duration\": \"1 week\"\n      },\n      {\n        \"product_id\": \"com.gys.powwow.life\",\n        \"type\": \"non-consumable\",\n        \"duration\": \"lifelong\"\n      }\n    ],\n    \"android\": [\n      {\n        \"product_id\": \"com.gys.powwow.subscription\",\n        \"base_plan\": \"year\",\n        \"type\": \"subscription\",\n        \"duration\": \"1 year\"\n      },\n      {\n        \"product_id\": \"com.gys.powwow.subscription\",\n        \"base_plan\": \"monthly\",\n        \"type\": \"subscription\",\n        \"duration\": \"1 month\"\n      },\n      {\n        \"product_id\": \"com.gys.powwow.subscription\",\n        \"base_plan\": \"weekly\",\n        \"type\": \"subscription\",\n        \"duration\": \"1 week\"\n      },\n      {\n        \"product_id\": \"com.gys.powwow.one.time\",\n        \"base_plan\": null,\n        \"type\": \"non-consumable\",\n        \"duration\": \"lifelong\"\n      }\n    ]\n  }\n}"
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://receipt-validator-237694335752.us-central1.run.app"
+    },
+    {
+      "key": "firebase_token",
+      "value": "твой_реальный_токен_firebase_здесь"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+storeFile=PowWow_key.jks
+storePassword=pwcaller
+keyAlias=pw
+keyPassword=caller

@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "237694335752",
+    "firebase_url": "https://powwow-caller-default-rtdb.firebaseio.com",
+    "project_id": "powwow-caller",
+    "storage_bucket": "powwow-caller.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:237694335752:android:5ebe9602a8328c658e4abd",
+        "android_client_info": {
+          "package_name": "com.gys.powwow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAj2uR3JuP_zVlzhOTM-DEevwmeoCo46U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:237694335752:android:f9b5e7e6a56f00528e4abd",
+        "android_client_info": {
+          "package_name": "pow.wow.caller"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAj2uR3JuP_zVlzhOTM-DEevwmeoCo46U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

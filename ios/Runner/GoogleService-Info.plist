@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyCfpsqAewNh1nG6ZGQZB5MGDiyj_173D8M</string>
+	<key>GCM_SENDER_ID</key>
+	<string>237694335752</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.gys.powwow</string>
+	<key>PROJECT_ID</key>
+	<string>powwow-caller</string>
+	<key>STORAGE_BUCKET</key>
+	<string>powwow-caller.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:237694335752:ios:056698f0c8ff58208e4abd</string>
+	<key>DATABASE_URL</key>
+	<string>https://powwow-caller-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>
