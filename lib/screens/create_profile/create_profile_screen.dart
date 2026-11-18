@@ -9,10 +9,9 @@ import 'package:pow_wow/main.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../app/routes/app_routes.dart';
 import '../../app/services/firebase/auth_service.dart';
 import '../../app/services/firebase/firestore_service.dart';
-import '../../app/services/subscriptions/subscription_service.dart';
+import '../../app/services/first_run_router.dart';
 
 class CreateProfileScreen extends StatefulWidget {
   const CreateProfileScreen({super.key});
@@ -113,27 +112,13 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   }
 
   Future<void> _routeAfterProfileCreated() async {
-    final SubscriptionService subscriptionService =
-        Get.find<SubscriptionService>();
-    await subscriptionService.prepareEntitlementGate(source: 'create_profile');
     if (!mounted) {
       return;
     }
-
-    if (subscriptionService.hasActiveEntitlement) {
-      testPrintLS(
-        'CreateProfileScreen:: subscription_gate_decision: route=/dashboard, active=true',
-      );
-      Get.offAllNamed(AppRoutes.dashboard);
-      return;
-    }
-
-    testPrintLS(
-      'CreateProfileScreen:: subscription_gate_decision: route=/subscription, active=false',
-    );
-    Get.offAllNamed(
-      AppRoutes.subscription,
-      arguments: const <String, bool>{'blockingPaywall': true},
+    await routeAfterProfile(
+      source: 'create_profile',
+      isNewProfile: true,
+      ownUid: Get.find<AuthService>().uid,
     );
   }
 

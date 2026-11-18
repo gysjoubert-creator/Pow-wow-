@@ -1,5 +1,6 @@
 import 'package:pow_wow/screens/create_profile/create_profile_screen.dart';
 import 'package:pow_wow/screens/edit_profile/edit_profile_screen.dart';
+import 'package:pow_wow/screens/invite_family/invite_family_screen.dart';
 import 'package:pow_wow/screens/onboarding/onboarding_screen.dart';
 import 'package:pow_wow/screens/splash/splash_screen.dart';
 import 'package:pow_wow/screens/subscription/subscription_binding.dart';
@@ -52,6 +53,11 @@ class AppPages {
       name: AppRoutes.subscription,
       page: () => const SubscriptionScreen(),
       binding: SubscriptionBinding(),
+    ),
+
+    GetPage<InviteFamilyScreen>(
+      name: AppRoutes.inviteFamily,
+      page: () => const InviteFamilyScreen(),
     ),
 
     // GetPage<CallingScreen>( //td //check

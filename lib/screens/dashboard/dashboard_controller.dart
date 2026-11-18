@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 import '../../app/routes/app_routes.dart';
+import '../../app/services/first_run_access.dart';
 import '../../app/services/subscriptions/subscription_service.dart';
 import '../../test_screen/test_log_helper.dart';
 
@@ -44,7 +45,9 @@ class DashboardController extends GetxController {
     final SubscriptionService subscriptionService =
         Get.find<SubscriptionService>();
     await subscriptionService.prepareEntitlementGate(source: 'dashboard_guard');
-    if (subscriptionService.hasActiveEntitlement) {
+    if (FirstRunAccess().canEnterApp(
+      hasEntitlement: subscriptionService.hasActiveEntitlement,
+    )) {
       testPrintLS(
         'DashboardController:: subscription_gate_decision: allow_dashboard=true',
       );

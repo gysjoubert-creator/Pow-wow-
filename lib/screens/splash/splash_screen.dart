@@ -7,7 +7,7 @@ import '../../app/data/models/user_profile.dart';
 import '../../app/routes/app_routes.dart';
 import '../../app/services/firebase/auth_service.dart';
 import '../../app/services/firebase/firestore_service.dart';
-import '../../app/services/subscriptions/subscription_service.dart';
+import '../../app/services/first_run_router.dart';
 import '../../app/utils/bootstrap_error_helper.dart';
 import '../../app/utils/retry_error_log_helper.dart';
 import '../../widgets/retry_error_view.dart';
@@ -131,27 +131,13 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _routeAfterProfileLoaded() async {
-    final SubscriptionService subscriptionService =
-        Get.find<SubscriptionService>();
-    await subscriptionService.prepareEntitlementGate(source: 'splash');
     if (!mounted) {
       return;
     }
-
-    if (subscriptionService.hasActiveEntitlement) {
-      testPrintLS(
-        'SplashScreen:: subscription_gate_decision: route=/dashboard, active=true',
-      );
-      Get.offAllNamed(AppRoutes.dashboard);
-      return;
-    }
-
-    testPrintLS(
-      'SplashScreen:: subscription_gate_decision: route=/subscription, active=false',
-    );
-    Get.offAllNamed(
-      AppRoutes.subscription,
-      arguments: const <String, bool>{'blockingPaywall': true},
+    await routeAfterProfile(
+      source: 'splash',
+      isNewProfile: false,
+      ownUid: _authService.uid,
     );
   }
 

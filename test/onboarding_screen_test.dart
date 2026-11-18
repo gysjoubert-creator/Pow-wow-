@@ -21,7 +21,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Stay close\nto your tribe'), findsOneWidget);
+    expect(find.text('Reach them through\ntheir headphones'), findsOneWidget);
     expect(find.text('Continue'), findsOneWidget);
 
     await tester.tap(
@@ -29,7 +29,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Invite your\npeople'), findsOneWidget);
+    expect(find.text('Invite your\nfamily'), findsOneWidget);
 
     await tester.tap(
       find.byKey(const ValueKey<String>('onboarding_primary_button')),
@@ -112,7 +112,7 @@ void main() {
       find.byKey(const ValueKey<String>('onboarding_primary_button')),
     );
     final Rect titleRect = tester.getRect(
-      find.text('Stay close\nto your tribe'),
+      find.text('Reach them through\ntheir headphones'),
     );
 
     expect(pageViewRect.left, 0);

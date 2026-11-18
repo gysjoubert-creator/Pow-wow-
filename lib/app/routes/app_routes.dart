@@ -6,5 +6,6 @@ abstract class AppRoutes {
   static const String dashboard = '/dashboard';
   static const String tribeSettings = '/tribe_settings';
   static const String subscription = '/subscription';
+  static const String inviteFamily = '/invite_family';
   static const String calling = '/calling';
 }
