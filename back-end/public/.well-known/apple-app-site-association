@@ -1,0 +1,15 @@
+{
+  "applinks": {
+      "details": [
+           {
+             "appIDs": [ "SBLN3253VL.com.gys.powwow" ],
+             "components": [
+                {
+                  "/": "/invite",
+                  "comment": "Matches only root file"
+                }
+             ]
+           }
+       ]
+   }
+}

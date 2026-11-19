@@ -50,3 +50,6 @@ app.*.map.json
 /android/key.properties
 /android/*.jks
 /android/*.keystore
+
+#Python related
+/back-end/receipt-validator/venv/
