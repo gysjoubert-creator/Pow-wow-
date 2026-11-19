@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+firebase-admin
+httpx[http2]
+PyJWT
+cryptography
+pydantic
+python-dotenv
