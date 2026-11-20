@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/widgets.dart';
 import 'package:pow_wow/app/data/models/user_profile.dart';
@@ -21,7 +22,9 @@ import '../../../app/services/call_session_coordinator.dart';
 import '../../../app/services/firebase/auth_service.dart';
 import '../../../app/services/firebase/firestore_service.dart';
 import '../../../app/data/models/tribe_member.dart';
+import '../../../app/services/first_run_access.dart';
 import '../../../app/services/invite_link_service.dart';
+import '../../../app/services/subscriptions/subscription_service.dart';
 import '../../../app/services/tribe_members_cache_storage.dart';
 import '../../../main.dart';
 import '../../../test_screen/test_log_helper.dart';
@@ -208,7 +211,15 @@ class HomeController extends GetxController {
     if (GetPlatform.isIOS) {
       await refreshIncomingCallRingingState(source: 'HC::_initAsync');
     }
-    final inviteTribeId = await _inviteLinkService.getInitalTribeId();
+    final FirstRunAccess firstRunAccess = FirstRunAccess();
+    // An invite opened before Home (on the invite step or paywall) is kept
+    // as a pending room id, because it is no longer the launch link.
+    final String? pendingInviteRoomId = firstRunAccess.pendingInviteRoomId;
+    final inviteTribeId =
+        await _inviteLinkService.getInitalTribeId() ?? pendingInviteRoomId;
+    if (pendingInviteRoomId != null) {
+      await firstRunAccess.clearPendingInvite();
+    }
     testPrintLS('HC:: _initAsync: inviteTribeId = $inviteTribeId');
     final String? newTribeId =
         inviteTribeId != null && inviteTribeId != _myProfile.tribeId
@@ -240,7 +251,33 @@ class HomeController extends GetxController {
   //   //_handleIncomingRoomInvite('1111');
   // }
 
+  /// Users without their own plan who weren't invited by family see the
+  /// paywall when they first try to talk or ring someone.
+  bool _openPaywallIfTalkLocked({required String source}) {
+    final bool hasEntitlement =
+        Get.isRegistered<SubscriptionService>() &&
+        Get.find<SubscriptionService>().hasActiveEntitlement;
+    if (!Get.isRegistered<SubscriptionService>() ||
+        FirstRunAccess().canTalk(hasEntitlement: hasEntitlement)) {
+      return false;
+    }
+    testPrintLS(
+      DiagnosticLog.flow(
+        'HomeController',
+        'talk_locked_paywall_opened',
+        data: {'source': source},
+      ),
+    );
+    if (Get.currentRoute != AppRoutes.subscription) {
+      Get.toNamed(AppRoutes.subscription);
+    }
+    return true;
+  }
+
   Future<void> sendCall(TribeMember member) async {
+    if (_openPaywallIfTalkLocked(source: 'send_call')) {
+      return;
+    }
     if (!_membersSynced) {
       testPrintLS(
         DiagnosticLog.warn(
@@ -409,6 +446,8 @@ class HomeController extends GetxController {
         data: {'roomId': roomId, 'currentRoomId': _myProfile.tribeId},
       ),
     );
+    await FirstRunAccess().recordInvite(roomId, ownUid: _myProfile.uid);
+    await FirstRunAccess().clearPendingInvite();
     if (_myProfile.tribeId == roomId) {
       testPrintLS(
         DiagnosticLog.warn(
@@ -1563,6 +1602,10 @@ class HomeController extends GetxController {
   }
 
   Future<void> startTalking() async {
+    if (_openPaywallIfTalkLocked(source: 'start_talking')) {
+      _isPressingTalk = false;
+      return;
+    }
     _isPressingTalk = true;
     testPrintLS(
       DiagnosticLog.flow(
@@ -1625,7 +1668,14 @@ class HomeController extends GetxController {
   }
 
   Future<void> stopTalking() async {
+    final bool wasTalkingWithFamily =
+        _isPressingTalk &&
+        _liveKitController.isConnected &&
+        activeRoomMembersCount >= 2;
     _isPressingTalk = false;
+    if (wasTalkingWithFamily) {
+      unawaited(_maybeRequestReview());
+    }
     testPrintLS(
       DiagnosticLog.flow(
         'HomeController',
@@ -1642,6 +1692,32 @@ class HomeController extends GetxController {
         data: {'isConnected': _liveKitController.isConnected},
       ),
     );
+  }
+
+  /// Asks for an App Store / Play rating once, after the third time the user
+  /// talked while another family member was connected. Uses the system
+  /// prompt only (no tracking); the OS decides whether it actually shows.
+  Future<void> _maybeRequestReview() async {
+    try {
+      final bool shouldAsk = await FirstRunAccess()
+          .recordTalkSessionWithFamily();
+      if (!shouldAsk) return;
+      final InAppReview inAppReview = InAppReview.instance;
+      if (await inAppReview.isAvailable()) {
+        testPrintLS(
+          DiagnosticLog.flow('HomeController', 'review_prompt_requested'),
+        );
+        await inAppReview.requestReview();
+      }
+    } catch (e) {
+      testPrintLS(
+        DiagnosticLog.warn(
+          'HomeController',
+          'review_prompt_failed',
+          data: {'error': e},
+        ),
+      );
+    }
   }
 
   bool _shouldSkipZombieDisconnectOnResume() {

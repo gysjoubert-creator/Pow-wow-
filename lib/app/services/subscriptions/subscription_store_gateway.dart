@@ -17,6 +17,14 @@ class SubscriptionProduct {
   final String? planLabel;
   final Object? storeObject;
 
+  /// Length of the store's free-trial introductory offer in days, or null
+  /// when the product has none. On iOS this is the offer configured in App
+  /// Store Connect; Apple only grants it to people who haven't had a trial
+  /// for this subscription group before.
+  final int? freeTrialDays;
+
+  bool get hasFreeTrial => (freeTrialDays ?? 0) > 0;
+
   const SubscriptionProduct({
     required this.id,
     required this.title,
@@ -26,7 +34,20 @@ class SubscriptionProduct {
     required this.currencyCode,
     this.planLabel,
     this.storeObject,
+    this.freeTrialDays,
   });
+}
+
+/// Converts an ISO 8601 period such as `P3D`, `P1W` or `P1M` to days.
+int? isoPeriodToDays(String? period) {
+  if (period == null) return null;
+  final RegExpMatch? match = RegExp(
+    r'^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?$',
+  ).firstMatch(period.trim().toUpperCase());
+  if (match == null) return null;
+  int part(int group) => int.tryParse(match.group(group) ?? '') ?? 0;
+  final int days = part(1) * 365 + part(2) * 30 + part(3) * 7 + part(4);
+  return days > 0 ? days : null;
 }
 
 class SubscriptionProductQuery {
@@ -172,7 +193,50 @@ class InAppPurchaseStoreGateway implements SubscriptionStoreGateway {
       currencyCode: product.currencyCode,
       planLabel: _planLabelForProduct(product),
       storeObject: product,
+      freeTrialDays: _freeTrialDaysForProduct(product),
     );
+  }
+
+  int? _freeTrialDaysForProduct(ProductDetails product) {
+    try {
+      if (product is AppStoreProductDetails) {
+        final SKProductDiscountWrapper? intro =
+            product.skProduct.introductoryPrice;
+        if (intro == null ||
+            intro.paymentMode != SKProductDiscountPaymentMode.freeTrail) {
+          return null;
+        }
+        final SKProductSubscriptionPeriodWrapper period =
+            intro.subscriptionPeriod;
+        final int unitDays = switch (period.unit) {
+          SKSubscriptionPeriodUnit.day => 1,
+          SKSubscriptionPeriodUnit.week => 7,
+          SKSubscriptionPeriodUnit.month => 30,
+          SKSubscriptionPeriodUnit.year => 365,
+        };
+        final int periods = intro.numberOfPeriods < 1
+            ? 1
+            : intro.numberOfPeriods;
+        final int days = period.numberOfUnits * unitDays * periods;
+        return days > 0 ? days : null;
+      }
+
+      if (product is GooglePlayProductDetails) {
+        final int? index = product.subscriptionIndex;
+        final offers = product.productDetails.subscriptionOfferDetails;
+        if (index == null || offers == null || index >= offers.length) {
+          return null;
+        }
+        for (final phase in offers[index].pricingPhases) {
+          if (phase.priceAmountMicros == 0) {
+            return isoPeriodToDays(phase.billingPeriod);
+          }
+        }
+      }
+    } catch (_) {
+      // Trial details are only used for paywall wording; never block on them.
+    }
+    return null;
   }
 
   String? _planLabelForProduct(ProductDetails product) {

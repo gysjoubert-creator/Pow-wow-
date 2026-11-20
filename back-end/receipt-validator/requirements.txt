@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pydantic
+google-api-python-client
+google-auth
+firebase-admin
+requests
+app-store-server-library
+python-dotenv

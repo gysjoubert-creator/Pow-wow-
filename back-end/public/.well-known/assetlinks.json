@@ -1,0 +1,16 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.gys.powwow",
+      "sha256_cert_fingerprints": [
+        "C6:2F:C3:2E:55:DB:F5:CF:BF:A9:FC:52:F8:5B:7B:7A:05:F6:9D:DC:45:B9:9D:8D:A8:79:0E:A5:B2:C5:36:66",
+        "A9:8F:F2:36:77:FD:8D:A4:2E:7B:D9:2E:73:58:47:54:F1:E4:31:EF:38:D4:47:D6:B7:A5:C2:00:5E:2B:27:F2"
+      ]
+    }
+  }
+]

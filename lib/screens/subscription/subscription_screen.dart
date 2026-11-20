@@ -1,8 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/routes/app_routes.dart';
+import '../../app/services/firebase/auth_service.dart';
+import '../../app/services/first_run_access.dart';
+import '../../app/services/first_run_router.dart';
+import '../../app/services/invite_link_service.dart';
 import '../../app/services/subscriptions/subscription_entitlement.dart';
 import '../../app/services/subscriptions/subscription_product_config.dart';
 import '../../app/services/subscriptions/subscription_product_ids.dart';
@@ -23,6 +29,7 @@ class SubscriptionScreen extends StatefulWidget {
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
   String? _selectedProductKey;
+  InviteLinkService? _inviteLinkService;
 
   @override
   void initState() {
@@ -31,6 +38,43 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     if (!service.state.storeAvailable) {
       service.loadProducts();
     }
+    if (_isBlockingPaywall) {
+      // An invited family member who taps their invite link while on the
+      // paywall joins that family for free and goes to Home.
+      final InviteLinkService inviteLinkService = InviteLinkService();
+      _inviteLinkService = inviteLinkService;
+      inviteLinkService.startListening(
+        onRoomReceived: (String roomId) {
+          final String? ownUid = Get.isRegistered<AuthService>()
+              ? Get.find<AuthService>().uid
+              : null;
+          unawaited(handleInviteBeforeHome(roomId, ownUid: ownUid));
+        },
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    unawaited(_inviteLinkService?.dispose());
+    super.dispose();
+  }
+
+  Future<void> _notNow({required bool blockingPaywall}) async {
+    testPrintLS(
+      DiagnosticLog.ui(
+        'SubscriptionScreen',
+        'not_now_tapped',
+        data: {'blocking': blockingPaywall},
+      ),
+    );
+    if (!blockingPaywall) {
+      Get.back<void>();
+      return;
+    }
+    await FirstRunAccess().deferPaywall();
+    if (!mounted) return;
+    Get.offAllNamed(AppRoutes.dashboard);
   }
 
   @override
@@ -90,7 +134,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
                 children: [
-                  _buildHero(state, products),
+                  _buildHero(state, products, selectedProduct),
                   if (state.errorMessage != null) ...[
                     const SizedBox(height: 14),
                     _buildErrorBanner(state.errorMessage!),
@@ -106,7 +150,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   const SizedBox(height: 18),
                   _buildPrimaryCta(service, state, selectedProduct),
                   const SizedBox(height: 12),
+                  _buildTrialFootnote(selectedProduct),
+                  const SizedBox(height: 4),
                   _buildRestoreAction(service, state),
+                  if (!state.hasActiveEntitlement)
+                    _buildNotNowAction(blockingPaywall: blockingPaywall),
                 ],
               ),
             ),
@@ -145,17 +193,26 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   Widget _buildHero(
     SubscriptionState state,
     List<SubscriptionProduct> products,
+    SubscriptionProduct? selectedProduct,
   ) {
+    final int? trialDays = selectedProduct?.freeTrialDays;
+    final bool showTrial =
+        !state.hasActiveEntitlement && trialDays != null && trialDays > 0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Stay close to your tribe',
+          showTrial
+              ? 'Try Pow Wow free for ${_daysLabel(trialDays)}'
+              : 'Reach your family, even with headphones on',
+          key: const ValueKey<String>('paywall_headline'),
           style: AppTextStyle.mainBold.copyWith(fontSize: 30, height: 1.06),
         ),
         const SizedBox(height: 10),
         Text(
-          'Choose a PowWow plan to keep family audio rooms, invites, and shared moments unlocked.',
+          showTrial
+              ? "Reach your kids, even with headphones on. You won't be charged today. Cancel anytime in Settings."
+              : 'Your voice comes through their game or music. One plan covers your whole family.',
           style: AppTextStyle.mainRegular.copyWith(
             color: AppColors.blackText3,
             height: 1.35,
@@ -311,9 +368,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   Widget _buildBenefits() {
     const List<String> benefits = <String>[
-      'Unlimited family voice room access',
-      'Invite and manage your tribe',
-      'Reliable realtime audio connection',
+      'Your voice comes through their game or music',
+      'Family-only and invite-only. No strangers',
+      'One plan covers your whole family',
+      'Not recorded. No ads. No tracking',
     ];
 
     return _buildCard(
@@ -471,12 +529,27 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  _planTitle(product),
-                  style: AppTextStyle.mainBold.copyWith(
-                    fontSize: 17,
-                    color: titleColor,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _planTitle(product),
+                      style: AppTextStyle.mainBold.copyWith(
+                        fontSize: 17,
+                        color: titleColor,
+                      ),
+                    ),
+                    if (product.hasFreeTrial && !current) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'First ${_daysLabel(product.freeTrialDays!)} free',
+                        style: AppTextStyle.mainSemibold.copyWith(
+                          fontSize: 13,
+                          color: AppColors.orangeBg,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               const SizedBox(width: 12),
@@ -532,6 +605,36 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       child: Text(_ctaTitle(state, selectedProduct, current)),
     );
   }
+
+  Widget _buildTrialFootnote(SubscriptionProduct? selectedProduct) {
+    if (selectedProduct == null || !selectedProduct.hasFreeTrial) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Text(
+        'Then ${selectedProduct.price} unless you cancel before the trial ends.',
+        textAlign: TextAlign.center,
+        style: AppTextStyle.mainRegular.copyWith(
+          fontSize: 13,
+          color: AppColors.greyText,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotNowAction({required bool blockingPaywall}) {
+    return TextButton(
+      key: const ValueKey<String>('paywall_not_now'),
+      onPressed: () => _notNow(blockingPaywall: blockingPaywall),
+      child: Text(
+        'Not now',
+        style: AppTextStyle.mainRegular.copyWith(color: AppColors.greyText),
+      ),
+    );
+  }
+
+  static String _daysLabel(int days) => days == 1 ? '1 day' : '$days days';
 
   Widget _buildRestoreAction(
     SubscriptionService service,
@@ -658,6 +761,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       }
     }
 
+    // Default to the priciest plan that has a free trial (usually yearly), so
+    // the paywall can lead with "free for 3 days".
+    for (final SubscriptionProduct product in products) {
+      if (product.hasFreeTrial && !_isCurrentPlan(state, product)) {
+        return product;
+      }
+    }
+
     for (final SubscriptionProduct product in products) {
       if (!_isCurrentPlan(state, product)) {
         return product;
@@ -730,6 +841,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     if (!state.backendConfigured) return 'Purchases unavailable';
     if (selectedProduct == null) return 'Choose a plan';
     if (state.canPurchase || _showBusyOverlay(state)) {
+      final int? trialDays = selectedProduct.freeTrialDays;
+      if (trialDays != null && trialDays > 0) {
+        return 'Start my ${_daysLabel(trialDays)} free';
+      }
       return 'Continue with ${_planTitle(selectedProduct)}';
     }
     return 'Please wait';

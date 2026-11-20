@@ -47,11 +47,11 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   CryptoSwift: e64e11850ede528a02a0f3e768cec8e9d92ecb90
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  flutter_callkit_incoming: cb8138af67cda6dd981f7101a5d709003af21502
-  flutter_foreground_task: a159d2c2173b33699ddb3e6c2a067045d7cebb89
-  flutter_webrtc: ec91d94b484ad49cf191ef93413f64a40ffd3b4c
-  livekit_client: 9b9a08c5c78f694ac6a9e70c1c269704ba574b73
-  permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
+  flutter_callkit_incoming: 417dd1b46541cdd5d855ad795ccbe97d1c18155e
+  flutter_foreground_task: 21ef182ab0a29a3005cc72cd70e5f45cb7f7f817
+  flutter_webrtc: 5aa37bfb8b834bff989a03182d1c4266a4f93377
+  livekit_client: e3c4fe5a12a8b70841db479ddf45e0a4e88d68c4
+  permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
   WebRTC-SDK: ab9b5319e458c2bfebdc92b3600740da35d5630d
 
 PODFILE CHECKSUM: 93f5a450c6c245c0f3f1a2d41779cfedc665debd

@@ -121,15 +121,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   },
                   children: const <Widget>[
                     _OnboardingPage(
-                      title: 'Stay close\nto your tribe',
-                      body: 'PowWow keeps family just\none press away.',
+                      title: 'Reach them through\ntheir headphones',
+                      body:
+                          'Your voice comes through their\ngame or music. One press away.',
                       illustration: _AssetIllustration(
                         assetPath: 'assets/png/onboarding_family.png',
                       ),
                     ),
                     _OnboardingPage(
-                      title: 'Invite your\npeople',
-                      body: 'Add family and friends to\nyour private tribe.',
+                      title: 'Invite your\nfamily',
+                      body:
+                          'Family-only and invite-only.\nIt\'s free for the people you invite.',
                       illustration: _AssetIllustration(
                         assetPath: 'assets/png/onboarding_invite.png',
                       ),
