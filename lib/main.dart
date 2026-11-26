@@ -702,6 +702,12 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       debugShowCheckedModeBanner: false,
       initialRoute: initialRoute,
       getPages: AppPages.pages,
+      // Any route GetX can't match (e.g. a powwow:// invite link that reaches
+      // the navigator) falls back to splash instead of crashing with
+      // "Null check operator used on a null value" in PageRedirect.
+      unknownRoute: AppPages.pages.firstWhere(
+        (GetPage<dynamic> p) => p.name == AppRoutes.splash,
+      ),
     );
   }
 }
