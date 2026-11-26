@@ -50,6 +50,9 @@ void main() {
       Get.put<SubscriptionService>(service);
       Get.put<TestLogsScreenController>(TestLogsScreenController());
 
+      // The paywall is taller than the default 800x600 test surface.
+      await tester.binding.setSurfaceSize(const Size(430, 1400));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(const GetMaterialApp(home: SubscriptionScreen()));
       return service;
     }
@@ -163,6 +166,41 @@ void main() {
 
       expect(find.text('Full access yearly'), findsOneWidget);
       expect(find.text('Monthly family subscription'), findsNothing);
+    });
+
+    testWidgets('leads with the free trial and preselects the trial plan', (
+      WidgetTester tester,
+    ) async {
+      store.products = <SubscriptionProduct>[
+        testProduct(
+          id: 'powwow_life',
+          title: 'PowWow Lifetime',
+          price: r'$38.99',
+          rawPrice: 38.99,
+        ),
+        const SubscriptionProduct(
+          id: 'powwow_yearly',
+          title: 'PowWow Yearly',
+          description: 'Yearly family subscription',
+          price: r'$20.99',
+          rawPrice: 20.99,
+          currencyCode: 'USD',
+          freeTrialDays: 3,
+        ),
+      ];
+      final service = await pumpScreen(tester);
+
+      await service.initialize();
+      await tester.pump();
+
+      expect(find.text('Try Pow Wow free for 3 days'), findsOneWidget);
+      expect(find.text('First 3 days free'), findsOneWidget);
+      expect(find.text('Start my 3 days free'), findsOneWidget);
+      expect(
+        find.text(r'Then $20.99 unless you cancel before the trial ends.'),
+        findsOneWidget,
+      );
+      expect(find.text('Not now'), findsOneWidget);
     });
 
     testWidgets('shows restore in progress state', (WidgetTester tester) async {

@@ -48,8 +48,10 @@ class InviteLinkService {
 
     await SharePlus.instance.share(
       ShareParams(
-        text: 'Join my PowWow tribe:\n$link',
-        subject: 'PowWow Invite',
+        text:
+            "I've added you to our family walkie-talkie. "
+            "Tap to join, it's free for you:\n$link",
+        subject: 'Join our family on Pow Wow',
       ),
     );
   }
